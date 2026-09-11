@@ -1,0 +1,51 @@
+services:
+  database:
+    image: mysql:5.7-debian
+    container_name: usb-fitness-association-database
+    env_file: [ .env ]
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+    healthcheck:
+      test: mysql --user=$DB_USER --password=$DB_PASSWORD --execute="SHOW DATABASES;"
+      start_interval: 1s
+      start_period: 10s
+      interval: 10s
+    volumes:
+      - database:/var/lib/mysql
+  mail:
+    image: axllent/mailpit
+    container_name: usb-fitness-association-mail
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: true
+      MP_SMTP_AUTH_ALLOW_INSECURE: true
+    ports:
+      - "8025:8025"
+  wordpress:
+    depends_on:
+      database:
+        condition: service_healthy
+      mail:
+        condition: service_healthy
+    image: wordpress:7.1
+    container_name: usb-fitness-association-wordpress
+    env_file: [ .env ]
+    environment:
+      WORDPRESS_DEBUG: 1
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_NAME: $DB_NAME
+      WORDPRESS_DB_USER: $DB_USER
+      WORDPRESS_DB_PASSWORD: $DB_PASSWORD
+    ports:
+      - "8080:80"
+    volumes:
+      - wordpress:/var/www/html
+      - ./docker/dev-mailer.php:/var/www/html/wp-content/mu-plugins/dev-mailer.php:ro
+      - ./src/usb-fitness-association-manager:/var/www/html/wp-content/plugins/usb-fitness-association-manager:ro
+volumes:
+  database:
+    name: usb-fitness-association-database
+  wordpress:
+    name: usb-fitness-association-wordpress

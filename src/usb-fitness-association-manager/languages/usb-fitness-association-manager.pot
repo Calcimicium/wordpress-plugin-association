@@ -1,0 +1,3 @@
+#: usb-fitness-association-manager.php:5
+msgid "Association manager"
+msgstr ""

@@ -1,0 +1,4 @@
+[submodule "wordpress-develop"]
+	path = wordpress-develop
+	url = git@github.com:WordPress/wordpress-develop.git
+	branch = 7.1
